@@ -1,6 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
-import {Form,Navbar,Col,Button,Nav,Alert} from 'react-bootstrap';
+import {Form,Button,Alert} from 'react-bootstrap';
 import styles from './Login.module.css';
 import AuthService from '../../services/AuthService.js';
 
@@ -13,6 +13,7 @@ class Login extends React.Component {
 		this.validator = this.validator.bind(this);
 		this.hideMessage = this.hideMessage.bind(this);
 		this.alertref = React.createRef();
+		document.title = 'Login';
 	}
 	hideMessage(){
 		this.setState({alert:false});
@@ -52,11 +53,13 @@ class Login extends React.Component {
 		if(this.validator()){
 			AuthService.login(this.state.fields).then((res)=>{
 				res.json().then(resp => {
-					if(resp.code == 200){
+					if(resp.code === 200){
 						this.setState({alert:true,alertType:'success',message:resp.message});
 						AuthService.setToken(resp.data.api_token);
-						setTimeout(this.props.history.push('profile'),1000);
-					} else if(resp.code == 400) {
+						setTimeout(() => {
+							window.location.href = window.location.origin+'/profile';
+						},1000);
+					} else if(resp.code === 400) {
 						let errors = {};
 						for(var key in resp.data) errors[key] = resp.data[key][0];
 						this.setState({errors:errors});
