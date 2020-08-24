@@ -90,10 +90,12 @@ class Register extends React.Component{
 		let errors = this.state.errors;
 
 		if(!fields['name']) errors['name'] = "Please enter username";
-		else if(!fields['name'].match(/^[a-zA-Z+$]/)) errors['name'] = "Enter valid username";
+		else if(!fields['name'].match(/^[a-zA-Z ]+$/)) errors['name'] = "Enter valid username";
 		else errors['name'] = '';
 
 		if(!fields['email']) errors['email'] = "Please enter email";
+		else if(!fields['email'].match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/))
+			errors['email'] = "Please enter valid email";
 		else errors['email'] = '';
 
 		if(!fields['password']) errors['password'] = "Please enter password";

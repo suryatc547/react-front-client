@@ -4,11 +4,14 @@ import styles from './Profile.module.css';
 import {Form,Alert,Button} from 'react-bootstrap';
 import AuthService from '../../services/AuthService.js';
 import UserService from '../../services/UserService.js';
+import {getCountries,getCountryCallingCode} from 'react-phone-number-input/input';
+import {isValidPhoneNumber} from 'react-phone-number-input';
+import en from 'react-phone-number-input/locale/en.json';
 
 class Profile extends React.Component {
 	constructor(props){
 		super(props);
-		this.state = {fields:{name:'',email:'',phone:'',profile:''},errors:{},alert:false,alertType:'danger',message:''};
+		this.state = {fields:{name:'',email:'',phone:'',profile:'',countrycode:''},errors:{},alert:false,alertType:'danger',message:''};
 		this.submitHandler = this.submitHandler.bind(this);
 		this.updateField = this.updateField.bind(this);
 		this.validator = this.validator.bind(this);
@@ -16,6 +19,7 @@ class Profile extends React.Component {
 		this.alertref = React.createRef();
 		this.getUserData = this.getUserData.bind(this);
 		this.deleteUserData = this.deleteUserData.bind(this);
+		this.getPhoneCode = this.getPhoneCode.bind(this);
 		document.title = 'Profile';
 	}
 	componentDidMount(){
@@ -68,6 +72,19 @@ class Profile extends React.Component {
      				<label style={{display:this.state.errors['email']?'block':'none'}} className="error">{this.state.errors['email']}</label>
      			</Form.Group>
      			<Form.Group className="text-left">
+     				<Form.Label>Country Code</Form.Label>
+     				<Form.Control id="countrycode" value={this.state.fields['countrycode']} name="countrycode" as="select" onChange={this.updateField}>
+     					{
+     						getCountries().map((country) => (
+     							<option value={country} data-code={getCountryCallingCode(country)} key={country}>
+     								{en[country]} (+{getCountryCallingCode(country)})
+     							</option>
+     						))
+     					}
+     				</Form.Control>
+     				<label style={{display:this.state.errors['countrycode']?'block':'none'}} className="error">{this.state.errors['countrycode']}</label>
+     			</Form.Group>
+     			<Form.Group className="text-left">
      				<Form.Label>Phone</Form.Label>
      				<Form.Control id="phone" name="phone" type="tel" onChange={this.updateField} value={this.state.fields['phone']} />
      				<label style={{display:this.state.errors['phone']?'block':'none'}} className="error">{this.state.errors['phone']}</label>
@@ -114,6 +131,10 @@ class Profile extends React.Component {
 		}
 		console.log(this.state.fields)
 	}
+	getPhoneCode(){
+		let ele = document.getElementById('countrycode');
+		return ele[ele.selectedIndex].getAttribute('data-code');
+	}
 	validator(){
 		let fields = this.state.fields;
 		let errors = this.state.errors;
@@ -122,9 +143,15 @@ class Profile extends React.Component {
 		else if(!fields['name'].match(/^[a-zA-Z+$]/)) errors['name'] = "Enter valid username";
 		else errors['name'] = '';
 
+		if(!fields['countrycode']) errors['countrycode'] = "Please select countrycode";
+		else errors['countrycode'] = '';
+
+		console.log('+'+this.getPhoneCode()+fields['phone'])
 		if(!fields['phone']) errors['phone'] = "Please enter phone number";
-		else if(fields['phone'].length < 10) errors['password'] = "Phone number should have minimum 10 numbers";
-		else if(fields['phone'].length > 15) errors['phone'] = "Phone number should not exceed maximum 15 characters";
+		// else if(fields['phone'].length < 10) errors['password'] = "Phone number should have minimum 10 numbers";
+		// else if(fields['phone'].length > 15) errors['phone'] = "Phone number should not exceed maximum 15 characters";
+		if(fields['phone'] && !isValidPhoneNumber('+'+this.getPhoneCode()+fields['phone']))
+			errors['phone'] = "Please enter a valid phone number";
 		else errors['phone'] = '';
 
 		let file = document.getElementById('profile');
